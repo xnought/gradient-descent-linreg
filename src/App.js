@@ -1,6 +1,8 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
 import TitleBar from "./components/TitleBar";
+import ScatterPlot from "./components/ScatterPlot";
+import HistoryLine from "./components/HistoryLine";
 import {
 	Fab,
 	Slider,
@@ -19,7 +21,7 @@ import {
 } from "@material-ui/core";
 import { PlayArrow, Stop, Replay } from "@material-ui/icons";
 import * as tf from "@tensorflow/tfjs";
-import createSpacing from "@material-ui/core/styles/createSpacing";
+
 const styles = (theme) => ({
 	root: {
 		minWidth: 500,
@@ -98,8 +100,8 @@ class App extends Component {
 		});
 	}
 	generateData() {
-		const X = [1, 2, 3];
-		const y = [1, 2, 3];
+		const X = [1, 2, 3, 4, 5, 6];
+		const y = [6, 5, 4, 3, 2, 1];
 		const XTensor = tf.tensor(X);
 		let yTensor = tf.tensor(y);
 
@@ -162,7 +164,7 @@ class App extends Component {
 			const { speed } = this.state.linreg.hyperparams;
 			const changeSpeed = upperBounds - speed;
 			await this.linearRegression();
-			await this.forceUpdate();
+			//await this.forceUpdate();
 			await timer(changeSpeed);
 			if (this.state.playButton === true) {
 				break;
@@ -196,8 +198,7 @@ class App extends Component {
 			epochs,
 			learningRate,
 		} = this.state.linreg.hyperparams;
-		const { X, y } = this.state.linreg.data;
-		const { rsquared } = this.state.linreg;
+		const { rsquared, data } = this.state.linreg;
 		const marginButtons = 3;
 		const { classes } = this.props;
 		const nullColor = (val) => (val === null ? "#dce0dd" : "black");
@@ -353,6 +354,18 @@ class App extends Component {
 						</CardActions>
 					</Card>
 				</Box>
+				<div>
+					<ScatterPlot data={data} m={m} b={b} ms={speed} />
+				</div>
+				<div>
+					<HistoryLine
+						data={data}
+						m={m}
+						b={b}
+						ms={speed}
+						rsquared={tf.sigmoid(rsquared === null ? 0 : rsquared)}
+					/>
+				</div>
 			</div>
 		);
 	}
