@@ -1,4 +1,4 @@
-import tf from "@tensorflow/tfjs";
+const tf = require("@tensorflow/tfjs");
 
 class Data {
 	constructor(start, end, step) {
@@ -20,21 +20,24 @@ class Data {
 		this.output(data, data);
 	}
 	random_linear_data(deviation) {
+		function getRandomInt(max) {
+			return Math.floor(Math.random() * Math.floor(max));
+		}
 		const X = this.tensor_to_array(
 			tf.range(this.start, this.end, this.step)
 		);
 		//Now we want to add a random number to each linear point
-		const y = this.tensor_to_array(
-			tf.add(
-				X,
-				tf.randomUniform(
-					[this.end - this.start],
-					0,
-					this.end / deviation
-				)
+		const y = tf.add(
+			X,
+			tf.randomUniform([this.end - this.start], 0, this.end / deviation)
+		);
+
+		this.output(
+			X,
+			this.tensor_to_array(
+				getRandomInt(2) ? tf.reverse(tf.round(y)) : tf.round(y)
 			)
 		);
-		this.output(X, y);
 	}
 }
 

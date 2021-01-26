@@ -1,4 +1,5 @@
 {
+  "homepage": "http://xnought.github.io/linear_regression_playground",
   "name": "linear_regression_playground",
   "version": "0.1.0",
   "private": true,
@@ -10,6 +11,7 @@
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
     "d3": "^6.4.0",
+    "gh-pages": "^3.1.0",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "react-scripts": "4.0.1",

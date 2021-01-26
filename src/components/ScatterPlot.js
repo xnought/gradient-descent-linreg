@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+// legends for linear scales
 import * as d3 from "d3";
 class ScatterPlot extends Component {
 	constructor(props) {
@@ -6,9 +7,9 @@ class ScatterPlot extends Component {
 		this.state = {
 			width: 1000,
 			height: 1000,
-			dataSet: [],
 		};
 	}
+
 	async componentDidMount() {
 		const { width, height } = this.state;
 		const svg = d3.select("#working");
@@ -32,8 +33,8 @@ class ScatterPlot extends Component {
 			.data(dataSet)
 			.enter()
 			.append("circle")
-			.attr("cx", (d) => d.x)
-			.attr("cy", (d) => height - d.y)
+			.attr("cx", (d) => 5 + d.x)
+			.attr("cy", (d) => height - 5 - d.y)
 			.attr("r", 3.5);
 
 		await svg
@@ -44,7 +45,7 @@ class ScatterPlot extends Component {
 			.attr("y2", height - y2)
 			.attr("stroke", "black");
 	}
-	componentDidUpdate() {
+	async componentDidUpdate() {
 		const { width, height } = this.state;
 		const svg = d3.select("#working");
 		function line(m, x, b) {
@@ -57,6 +58,7 @@ class ScatterPlot extends Component {
 			let lengthx = data.X.length;
 			let y1 = (line(m, data.X[0], b) / lengthy) * height;
 			let y2 = (line(m, data.X[lengthx - 1], b) / lengthy) * height;
+
 			svg.select("line")
 				.transition()
 				.duration(200 - ms)

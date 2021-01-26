@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import TitleBar from "./components/TitleBar";
 import ScatterPlot from "./components/ScatterPlot";
 import HistoryLine from "./components/HistoryLine";
+import ContourLoss from "./components/ContourLoss";
+import Data from "./ml/data";
 import {
 	Fab,
 	Slider,
@@ -18,6 +20,7 @@ import {
 	MenuItem,
 	InputLabel,
 	Select,
+	Button,
 } from "@material-ui/core";
 import { PlayArrow, Stop, Replay } from "@material-ui/icons";
 import * as tf from "@tensorflow/tfjs";
@@ -43,6 +46,10 @@ const styles = (theme) => ({
 	},
 	selectEmpty: {
 		marginTop: theme.spacing(2),
+	},
+	details: {
+		display: "flex",
+		flexDirection: "column",
 	},
 });
 
@@ -80,6 +87,7 @@ class App extends Component {
 		this.handleSlider = this.handleSlider.bind(this);
 		this.reset = this.reset.bind(this);
 	}
+
 	reset() {
 		this.setState({
 			...this.state,
@@ -100,11 +108,14 @@ class App extends Component {
 		});
 	}
 	generateData() {
-		const X = [1, 2, 3, 4, 5, 6];
-		const y = [6, 5, 4, 3, 2, 1];
+		function getRandomInt(max) {
+			return Math.floor(Math.random() * Math.floor(max));
+		}
+		let generate = new Data(0, 10, 1);
+		generate.random_linear_data(getRandomInt(4) + 2);
+		const { X, y } = generate.output;
 		const XTensor = tf.tensor(X);
 		let yTensor = tf.tensor(y);
-
 		const mean = tf.mean(yTensor).dataSync()[0];
 		const meanSquaredError = tf
 			.sum(tf.pow(tf.sub(mean, yTensor), 2))
@@ -121,22 +132,26 @@ class App extends Component {
 
 	linearRegression() {
 		//hypothesis function
+		let { m, b } = this.state.linreg.tunableparams;
+		let { learningRate } = this.state.linreg.hyperparams;
+		const { X, y } = this.state.linreg.tensorData;
+		let yPred = h(X, m, b);
+		let len = X.shape[0];
 		function h(X, m, b) {
 			return tf.add(tf.mul(X, m), b);
 		}
 		//Define the loss function
 		function loss(y, y_pred) {
-			return tf.sum(tf.pow(tf.sub(y_pred, y), 2)).dataSync()[0];
+			return (
+				(1 / (2 * len)) *
+				tf.sum(tf.pow(tf.sub(y_pred, y), 2)).dataSync()[0]
+			);
 		}
 
-		let { m, b } = this.state.linreg.tunableparams;
-		let { learningRate } = this.state.linreg.hyperparams;
-		const { X, y } = this.state.linreg.tensorData;
-		let yPred = h(X, m, b);
-
 		//then compute the gradient
-		let dlossdm = tf.sum(tf.mul(tf.sub(yPred, y), X)).dataSync()[0];
-		let dlossdb = tf.sum(tf.sub(yPred, y)).dataSync()[0];
+		let dlossdm =
+			(1 / len) * tf.sum(tf.mul(tf.sub(yPred, y), X)).dataSync()[0];
+		let dlossdb = (1 / len) * tf.sum(tf.sub(yPred, y)).dataSync()[0];
 		let lossValue = loss(y, yPred);
 
 		//gradient descent by updating the m and b
@@ -207,165 +222,224 @@ class App extends Component {
 		return (
 			<div>
 				<TitleBar />
-				<Box display="flex" p={{ xs: 5, md: 10 }}>
-					<Card className={classes.root}>
-						<CardContent>
-							<Typography variant="h3" component="h2">
-								epoch: {epochs}
-							</Typography>
+				<Box display="flex" justifyContent="center" marginTop={20}>
+					<Box>
+						<ScatterPlot data={data} m={m} b={b} ms={speed} />
+					</Box>
+					<Box>
+						<Box display="flex">
+							<Card className={classes.root}>
+								<Box display="flex">
+									<Box>
+										<CardContent>
+											<Typography
+												variant="h3"
+												component="h2"
+											>
+												epoch: {epochs}
+											</Typography>
 
-							<Typography
-								variant="h6"
-								component="h2"
-								style={{
-									color: nullColor(loss),
-								}}
-							>
-								{`loss = ${nullNumber(loss, 10)}`}
-							</Typography>
-							<Typography
-								variant="h6"
-								component="h2"
-								style={{
-									color: nullColor(rsquared),
-								}}
-							>
-								{` r^2 = ${nullNumber(rsquared, 10)}`}
-							</Typography>
-							<Typography
-								variant="h5"
-								component="h2"
-								style={{
-									color: (m && b) === 0 ? "#dce0dd" : "black",
-								}}
-							>
-								{(m && b) === 0
-									? `f(x) = mx + b`
-									: `f(x) = ${m.toPrecision(
-											3
-									  )}x + ${b.toPrecision(3)}`}
-							</Typography>
-						</CardContent>
-						<CardActions>
-							<Box display="flex">
-								<Box display="flex" margin={marginButtons}>
-									<IconButton onClick={this.reset}>
-										<Replay />
-									</IconButton>
+											<Typography
+												variant="h6"
+												component="h2"
+												style={{
+													color: nullColor(loss),
+												}}
+											>
+												{`loss = ${nullNumber(
+													loss,
+													10
+												)}`}
+											</Typography>
+											<Typography
+												variant="h6"
+												component="h2"
+												style={{
+													color: nullColor(rsquared),
+												}}
+											>
+												{` r^2 = ${nullNumber(
+													rsquared,
+													10
+												)}`}
+											</Typography>
+											<Typography
+												variant="h5"
+												component="h2"
+												style={{
+													color:
+														(m && b) === 0
+															? "#dce0dd"
+															: "black",
+												}}
+											>
+												{(m && b) === 0
+													? `f(x) = mx + b`
+													: `f(x) = ${m.toPrecision(
+															3
+													  )}x + ${b.toPrecision(
+															3
+													  )}`}
+											</Typography>
+										</CardContent>
+									</Box>
+									<Box marginLeft={10}>
+										<HistoryLine
+											data={data}
+											m={m}
+											b={b}
+											ms={speed}
+											rsquared={loss === null ? 0 : loss}
+										/>
+									</Box>
 								</Box>
-								<Box display="flex" margin={marginButtons}>
-									<Fab
-										onClick={() => {
-											this.setState({
-												playButton: !this.state
-													.playButton,
-											});
-											this.a();
-										}}
-										style={{
-											background: this.state.playButton
-												? "#4caf50"
-												: "#f44336",
-											color: "#FFFFFF",
-										}}
-									>
-										{this.state.playButton ? (
-											<PlayArrow />
-										) : (
-											<Stop />
-										)}
-									</Fab>
-								</Box>
-								<Box
-									display="flex"
-									margin={marginButtons}
-									minWidth={200}
-								>
-									<CircularProgress
-										style={{
-											color: "#fdd835",
-										}}
-										value={speed / 2}
-										variant="determinate"
-									></CircularProgress>
-									<Typography
-										variant="caption"
-										style={{
-											color: "#fdd835",
-										}}
-									>
-										speed
-									</Typography>
-									<Slider
-										style={{
-											marginTop: 15,
-											color: "#fdd835",
-										}}
-										value={speed}
-										min={0}
-										max={200}
-										onChange={this.handleSlider}
-									/>
-								</Box>
-								<Box>
-									<FormControl
-										className={classes.formControl}
-									>
-										<InputLabel
-											style={{ color: "#606060" }}
+								<CardActions>
+									<Box display="flex">
+										<Box
+											display="flex"
+											margin={marginButtons}
 										>
-											learning rate
-										</InputLabel>
-										<Select
-											style={{
-												color: "#606060",
-											}}
-											color="secondary"
-											value={learningRate}
-											onChange={(event) => {
-												this.setState({
-													linreg: {
-														...this.state.linreg,
-														hyperparams: {
-															...this.state.linreg
-																.hyperparams,
-															learningRate:
-																event.target
-																	.value,
-														},
-													},
-												});
-											}}
+											<IconButton onClick={this.reset}>
+												<Replay />
+											</IconButton>
+										</Box>
+										<Box
+											display="flex"
+											margin={marginButtons}
 										>
-											<MenuItem value={1.0}>1.0</MenuItem>
-											<MenuItem value={0.1}>
-												0.01
-											</MenuItem>
-											<MenuItem value={0.01}>
-												0.01
-											</MenuItem>
-											<MenuItem value={0.001}>
-												0.001
-											</MenuItem>
-										</Select>
-									</FormControl>
-								</Box>
-							</Box>
-						</CardActions>
-					</Card>
+											<Fab
+												onClick={() => {
+													this.setState({
+														playButton: !this.state
+															.playButton,
+													});
+													this.a();
+												}}
+												style={{
+													background: this.state
+														.playButton
+														? "#4caf50"
+														: "#f44336",
+													color: "#FFFFFF",
+												}}
+											>
+												{this.state.playButton ? (
+													<PlayArrow />
+												) : (
+													<Stop />
+												)}
+											</Fab>
+										</Box>
+										<Box
+											display="flex"
+											margin={marginButtons}
+											minWidth={200}
+										>
+											<CircularProgress
+												style={{
+													color: "#fdd835",
+												}}
+												value={speed / 2}
+												variant="determinate"
+											></CircularProgress>
+											<Typography
+												variant="caption"
+												style={{
+													color: "#fdd835",
+												}}
+											>
+												speed
+											</Typography>
+											<Slider
+												style={{
+													marginTop: 15,
+													color: "#fdd835",
+												}}
+												value={speed}
+												min={0}
+												max={200}
+												onChange={this.handleSlider}
+											/>
+										</Box>
+										<Box>
+											<FormControl
+												className={classes.formControl}
+											>
+												<InputLabel
+													style={{ color: "#606060" }}
+												>
+													learning rate
+												</InputLabel>
+												<Select
+													style={{
+														color: "#606060",
+													}}
+													color="secondary"
+													value={learningRate}
+													onChange={(event) => {
+														this.setState({
+															linreg: {
+																...this.state
+																	.linreg,
+																hyperparams: {
+																	...this
+																		.state
+																		.linreg
+																		.hyperparams,
+																	learningRate:
+																		event
+																			.target
+																			.value,
+																},
+															},
+														});
+													}}
+												>
+													<MenuItem value={1.0}>
+														1.0
+													</MenuItem>
+													<MenuItem value={0.1}>
+														0.1
+													</MenuItem>
+													<MenuItem value={0.03}>
+														0.03
+													</MenuItem>
+													<MenuItem value={0.01}>
+														0.01
+													</MenuItem>
+													<MenuItem value={0.001}>
+														0.001
+													</MenuItem>
+													<MenuItem value={0.0001}>
+														0.0001
+													</MenuItem>
+													<MenuItem value={0.00001}>
+														0.00001
+													</MenuItem>
+												</Select>
+											</FormControl>
+										</Box>
+									</Box>
+								</CardActions>
+							</Card>
+						</Box>
+						<ContourLoss
+							ms={speed}
+							data={data}
+							m={isFinite(m) ? m : 0}
+							b={isFinite(b) ? b : 0}
+						/>
+						<Button
+							onClick={() => {
+								window.location.reload();
+							}}
+							variant="outlined"
+							color="primary"
+						>
+							New Data
+						</Button>
+					</Box>
 				</Box>
-				<div>
-					<ScatterPlot data={data} m={m} b={b} ms={speed} />
-				</div>
-				<div>
-					<HistoryLine
-						data={data}
-						m={m}
-						b={b}
-						ms={speed}
-						rsquared={tf.sigmoid(rsquared === null ? 0 : rsquared)}
-					/>
-				</div>
 			</div>
 		);
 	}

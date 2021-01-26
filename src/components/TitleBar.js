@@ -1,4 +1,5 @@
-import { AppBar, Toolbar, Typography } from "@material-ui/core";
+import { AppBar, Toolbar, Typography, IconButton } from "@material-ui/core";
+import { GitHub } from "@material-ui/icons";
 
 export default function TitleBar() {
 	return (
@@ -8,6 +9,14 @@ export default function TitleBar() {
 					<Typography variant="h6">
 						Linear Regression Playground
 					</Typography>
+					<IconButton
+						href="https://github.com/xnought/vectorv"
+						edge="end"
+						color="white"
+						aria-label="menu"
+					>
+						<GitHub />
+					</IconButton>
 				</Toolbar>
 			</AppBar>
 		</div>
