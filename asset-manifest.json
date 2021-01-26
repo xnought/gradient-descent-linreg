@@ -1,8 +1,8 @@
 {
   "files": {
     "main.css": "/linear-regression-playground/static/css/main.6dea0f05.chunk.css",
-    "main.js": "/linear-regression-playground/static/js/main.d662804c.chunk.js",
-    "main.js.map": "/linear-regression-playground/static/js/main.d662804c.chunk.js.map",
+    "main.js": "/linear-regression-playground/static/js/main.7170e1f5.chunk.js",
+    "main.js.map": "/linear-regression-playground/static/js/main.7170e1f5.chunk.js.map",
     "runtime-main.js": "/linear-regression-playground/static/js/runtime-main.71384821.js",
     "runtime-main.js.map": "/linear-regression-playground/static/js/runtime-main.71384821.js.map",
     "static/js/2.8b095926.chunk.js": "/linear-regression-playground/static/js/2.8b095926.chunk.js",
@@ -17,6 +17,6 @@
     "static/js/runtime-main.71384821.js",
     "static/js/2.8b095926.chunk.js",
     "static/css/main.6dea0f05.chunk.css",
-    "static/js/main.d662804c.chunk.js"
+    "static/js/main.7170e1f5.chunk.js"
   ]
 }
