@@ -1,6 +1,6 @@
 const tf = require("@tensorflow/tfjs");
 
-class Data {
+export default class Data {
 	constructor(start, end, step) {
 		this.start = start;
 		this.end = end;
@@ -40,5 +40,3 @@ class Data {
 		);
 	}
 }
-
-module.exports = Data;

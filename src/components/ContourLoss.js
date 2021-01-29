@@ -1,19 +1,17 @@
 import React, { Component } from "react";
 import * as d3 from "d3";
-import * as tf from "@tensorflow/tfjs";
-import { contours } from "d3";
 class ContourLoss extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			width: 600,
-			height: 600,
+			height: 500,
 		};
 	}
 	async componentDidMount() {
 		const { width, height } = await this.state;
 		const svg = d3.select("#divContour").select("#contour");
-		const { data } = await this.props;
+		const { data, darkness } = await this.props;
 		let n = width,
 			m = height,
 			values = new Array(n * m);
@@ -33,18 +31,18 @@ class ContourLoss extends Component {
 			}
 			return summed / (2 * x.length);
 		}
-		let thresholds = await d3.range(1, 20).map((i) => Math.pow(2, i));
+		let thresholds = await d3
+			.range(darkness, 20, 1)
+			.map((i) => Math.pow(2, i));
 		let color = d3.scaleSequentialLog(
 			d3.extent(thresholds),
-			d3.interpolateCool
+			d3.interpolateMagma
 		);
 		const contours = d3.contours().size([n, m]).thresholds(thresholds)(
 			values
 		);
 		svg.append("g")
 			.attr("fill", "none")
-			.attr("stroke", "#fff")
-			.attr("stroke-opacity", 0.5)
 			.selectAll("path")
 			.data(contours)
 			.join("path")
@@ -54,22 +52,33 @@ class ContourLoss extends Component {
 		svg.append("circle")
 			.attr("cx", width / 2)
 			.attr("cy", 0)
-			.attr("r", 7)
-			.style("fill", "#5df542")
-			.style("stroke", "black");
+			.attr("r", 5)
+			.style("fill", "none")
+			.style("stoke", "none");
 	}
 	componentDidUpdate() {
 		const { width, height } = this.state;
+		const { loss, ms, m, b } = this.props;
 		const svg = d3.select("#divContour").select("#contour");
-		svg.select("circle")
-			.transition()
-			.duration(200 - this.props.ms)
-			.attr("cx", width / 2 + (this.props.m / 10) * width)
-			.attr("cy", (this.props.b / 20) * height);
-		//if (isFinite(m) && isFinite(b)) {
-		//} else {
-		//}
-		//Now we update the point/circle to which the loss is currently located
+		if (loss == null) {
+			svg.select("circle")
+				.attr("cx", width / 2)
+				.attr("cy", 0)
+				.attr("r", 5)
+				.style("fill", "none")
+				.style("stroke", "none");
+			return;
+		}
+		if (loss < 1000) {
+			svg.select("circle")
+				.transition()
+				.duration(200 - ms)
+				.attr("cx", width / 2 + (m / 10) * width)
+				.attr("cy", (b / 20) * height)
+				.attr("r", loss * 2 + 5)
+				.style("fill", "red")
+				.style("opacity", "0.5");
+		}
 	}
 	render() {
 		const { width, height } = this.state;

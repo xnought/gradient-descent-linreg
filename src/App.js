@@ -57,6 +57,7 @@ class App extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
+			darkness: -8,
 			playButton: true,
 			linreg: {
 				meanSquaredError: 0,
@@ -70,10 +71,10 @@ class App extends Component {
 					y: [],
 				},
 				hyperparams: {
-					learningRate: 0.01,
+					learningRate: 0.03,
 					epochs: 0,
 					loss: null,
-					speed: 100,
+					speed: 200,
 				},
 				tunableparams: {
 					m: 0,
@@ -111,15 +112,15 @@ class App extends Component {
 		function getRandomInt(max) {
 			return Math.floor(Math.random() * Math.floor(max));
 		}
-		let generate = new Data(0, 10, 1);
-		generate.random_linear_data(getRandomInt(4) + 2);
+		let generate = new Data(0, 5, 1);
+		generate.random_linear_data(3);
 		const { X, y } = generate.output;
 		const XTensor = tf.tensor(X);
 		let yTensor = tf.tensor(y);
 		const mean = tf.mean(yTensor).dataSync()[0];
-		const meanSquaredError = tf
-			.sum(tf.pow(tf.sub(mean, yTensor), 2))
-			.dataSync()[0];
+		const meanSquaredError =
+			(1 / (X.length * 2)) *
+			tf.sum(tf.pow(tf.sub(mean, yTensor), 2)).dataSync()[0];
 		this.setState({
 			linreg: {
 				...this.state.linreg,
@@ -203,6 +204,7 @@ class App extends Component {
 
 	async componentDidMount() {
 		await this.generateData();
+		//document.body.style.zoom = "90%";
 	}
 
 	render() {
@@ -222,14 +224,31 @@ class App extends Component {
 		return (
 			<div>
 				<TitleBar />
-				<Box display="flex" justifyContent="center" marginTop={20}>
-					<Box>
-						<ScatterPlot data={data} m={m} b={b} ms={speed} />
+				<Box display="flex" justifyContent="center" marginTop={2}>
+					<Box marginRight={10}>
+						<ScatterPlot
+							data={data}
+							m={m}
+							b={b}
+							ms={speed}
+							rsquared={loss === null ? 0 : loss}
+							darkness={this.state.darkness}
+						/>
 					</Box>
 					<Box>
 						<Box display="flex">
 							<Card className={classes.root}>
 								<Box display="flex">
+									<Box marginLeft={5} marginRight={5}>
+										<HistoryLine
+											data={data}
+											m={m}
+											b={b}
+											ms={speed}
+											rsquared={loss === null ? 0 : loss}
+											darkness={this.state.darkness}
+										/>
+									</Box>
 									<Box>
 										<CardContent>
 											<Typography
@@ -264,7 +283,7 @@ class App extends Component {
 												)}`}
 											</Typography>
 											<Typography
-												variant="h5"
+												variant="h6"
 												component="h2"
 												style={{
 													color:
@@ -282,15 +301,6 @@ class App extends Component {
 													  )}`}
 											</Typography>
 										</CardContent>
-									</Box>
-									<Box marginLeft={10}>
-										<HistoryLine
-											data={data}
-											m={m}
-											b={b}
-											ms={speed}
-											rsquared={loss === null ? 0 : loss}
-										/>
 									</Box>
 								</Box>
 								<CardActions>
@@ -428,16 +438,27 @@ class App extends Component {
 							data={data}
 							m={isFinite(m) ? m : 0}
 							b={isFinite(b) ? b : 0}
+							loss={loss}
+							darkness={this.state.darkness}
 						/>
-						<Button
-							onClick={() => {
-								window.location.reload();
-							}}
-							variant="outlined"
-							color="primary"
-						>
-							New Data
-						</Button>
+						<Box>
+							<Button
+								onClick={() => {
+									window.location.reload();
+								}}
+								variant="outlined"
+								color="primary"
+							>
+								New Data
+							</Button>
+
+							<Typography variant="h6" component="h4">
+								x: {data.X.toString()}
+							</Typography>
+							<Typography variant="h6" component="h4">
+								y: {data.y.toString()}
+							</Typography>
+						</Box>
 					</Box>
 				</Box>
 			</div>
