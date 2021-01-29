@@ -109,9 +109,9 @@ class App extends Component {
 		});
 	}
 	generateData() {
-		function getRandomInt(max) {
-			return Math.floor(Math.random() * Math.floor(max));
-		}
+		//function getRandomInt(max) {
+		//return Math.floor(Math.random() * Math.floor(max));
+		//}
 		let generate = new Data(0, 5, 1);
 		generate.random_linear_data(3);
 		const { X, y } = generate.output;
@@ -441,24 +441,22 @@ class App extends Component {
 							loss={loss}
 							darkness={this.state.darkness}
 						/>
-						<Box>
-							<Button
-								onClick={() => {
-									window.location.reload();
-								}}
-								variant="outlined"
-								color="primary"
-							>
-								New Data
-							</Button>
+						<Button
+							onClick={() => {
+								window.location.reload();
+							}}
+							variant="outlined"
+							color="primary"
+						>
+							New Data
+						</Button>
 
-							<Typography variant="h6" component="h4">
-								x: {data.X.toString()}
-							</Typography>
-							<Typography variant="h6" component="h4">
-								y: {data.y.toString()}
-							</Typography>
-						</Box>
+						<Typography variant="h6" component="h4">
+							x: {data.X.toString()}
+						</Typography>
+						<Typography variant="h6" component="h4">
+							y: {data.y.toString()}
+						</Typography>
 					</Box>
 				</Box>
 			</div>
